@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.sqlite import SqliteSaver  # kalıcı bellek (SQLite)
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 load_dotenv()
 
