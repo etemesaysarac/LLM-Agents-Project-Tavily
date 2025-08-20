@@ -1,23 +1,23 @@
 from dotenv import load_dotenv
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+from langchain_tavily import TavilySearch
 from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.sqlite import SqliteSaver  # kalıcı bellek (SQLite)
 
 load_dotenv()
 
-model = ChatOpenAI(model="gpt-4")
+llm = ChatOpenAI(model="gpt-4o-mini")
+tavily = TavilySearch(max_results=2, include_answer=True, include_raw_content=True)
+tools = [tavily]
 
-search = TavilySearchResults(max_results=2)
-tools = [search]
+# DİKKAT: context manager şart!  :contentReference[oaicite:3]{index=3}
+with SqliteSaver.from_conn_string("checkpoints.sqlite") as checkpointer:
+    agent = create_react_agent(llm, tools, checkpointer=checkpointer)
+    config = {"configurable": {"thread_id": "abc123"}}
 
-agent_executor = create_react_agent(model, tools)
-
-if __name__ == '__main__':
-    response = agent_executor.invoke(
-        {"messages" : [HumanMessage(content="What is the weather in İstanbul now?")]}
-    )
-    for r in response["messages"]:
-        print(r.content)
-        # The response has been simplified.
-
+    if __name__ == "__main__":
+        while True:
+            user_input = input(">")
+            for step in agent.stream({"messages": user_input}, config, stream_mode="values"):
+                step["messages"][-1].pretty_print()
+                print("----")
