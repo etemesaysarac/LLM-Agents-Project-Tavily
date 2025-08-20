@@ -4,7 +4,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 
-
 load_dotenv()
 
 model = ChatOpenAI(model="gpt-4")
@@ -15,5 +14,10 @@ tools = [search]
 agent_executor = create_react_agent(model, tools)
 
 if __name__ == '__main__':
-    response = agent_executor.invoke({"messages" : [HumanMessage(content="What is the weather in İstanbul now?")]})
-    print(response)
+    response = agent_executor.invoke(
+        {"messages" : [HumanMessage(content="What is the weather in İstanbul now?")]}
+    )
+    for r in response["messages"]:
+        print(r.content)
+        # The response has been simplified.
+
