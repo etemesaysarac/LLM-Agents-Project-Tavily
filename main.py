@@ -13,7 +13,7 @@ tools = [tavily]
 # DİKKAT: context manager şart!  :contentReference[oaicite:3]{index=3}
 with SqliteSaver.from_conn_string("checkpoints.sqlite") as checkpointer:
     agent = create_react_agent(llm, tools, checkpointer=checkpointer)
-    config = {"configurable": {"thread_id": "abc123"}}
+    config = {"configurable": {"thread_id": "Easyso2025"}}
 
     if __name__ == "__main__":
         while True:
