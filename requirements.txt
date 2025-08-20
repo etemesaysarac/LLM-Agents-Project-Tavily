@@ -9,3 +9,6 @@ langchain-chroma==0.2.5
 python-dotenv==1.1.1
 pytest==8.4.1
 langchain-openai==0.3.30
+
+
+#requirements need to update version if its necesssary
