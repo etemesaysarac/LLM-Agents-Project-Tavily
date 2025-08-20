@@ -15,5 +15,5 @@ model_with_tools = model.bind_tools(tools)
 
 if __name__ == '__main__':
     response =  model_with_tools.invoke([HumanMessage(content="What is the weather in İstanbul today?")])
-    print(response.content)
+    print(response)
     print(response.tool_calls)
