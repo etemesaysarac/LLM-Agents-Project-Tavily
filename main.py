@@ -2,9 +2,11 @@ from click import prompt
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
-from langgraph.prebuilt import create_react_agent
+#from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langchain import hub
+from langchain.agents import create_react_agent, AgentExecutor
+
 
 load_dotenv()
 
@@ -16,7 +18,7 @@ prompt = hub.pull("hwchase17/react")
 
 # DİKKAT: context manager şart!  :contentReference[oaicite:3]{index=3}
 with SqliteSaver.from_conn_string("checkpoints.sqlite") as checkpointer:
-    agent = create_react_agent(llm, tools, checkpointer=checkpointer)
+    agent = create_react_agent(llm, tools, prompt)
     config = {"configurable": {"thread_id": "Easyso2025"}}
 
     if __name__ == "__main__":
