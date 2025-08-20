@@ -1,14 +1,18 @@
+from click import prompt
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langchain import hub
 
 load_dotenv()
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 tavily = TavilySearch(max_results=2, include_answer=True, include_raw_content=True)
 tools = [tavily]
+
+prompt = hub.pull("hwchase17/react")
 
 # DİKKAT: context manager şart!  :contentReference[oaicite:3]{index=3}
 with SqliteSaver.from_conn_string("checkpoints.sqlite") as checkpointer:
