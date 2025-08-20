@@ -1,13 +1,19 @@
 from dotenv import load_dotenv
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+
 
 load_dotenv()
 
+model = ChatOpenAI(model="gpt-4")
+
 search = TavilySearchResults(max_results=2)
-# If we want, we can create other tools.
-# Once we have all the tools we want, we can put them in a list that we will reference later.
 tools = [search]
 
+model_with_tools = model.bind_tools(tools)
+
 if __name__ == '__main__':
-    search_results = search.invoke("what is the weather in istanbul?")
-    print(search_results)
+    response =  model_with_tools.invoke([HumanMessage(content="What is the weather in İstanbul today?")])
+    print(response.content)
+    print(response.tool_calls)
