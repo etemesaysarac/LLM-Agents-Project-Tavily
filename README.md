@@ -1,157 +1,244 @@
-LLM Agents Project — ReAct Web-Search Agent (LangChain + Tavily + OpenAI)
-~~
-~~
+# LLM Agents Project · ReAct Web-Search Agent (LangChain + Tavily + OpenAI)
 
-A sharp, production-style ReAct agent that understands your question, decides when to search the web, and returns a clear, sourced answer.
-It’s built for observability and extensibility: you can watch each tool call, tweak prompts, and add new tools in minutes.
+> **Abstract.**
+> This repository implements a **ReAct** (Reason + Act) agent that plans tool usage with a Large Language Model (LLM), executes a **web-search tool** when needed, and synthesizes a final answer with full observability of intermediate steps. The project is designed for reproducibility, maintainability, and extension to additional tools.
 
-Table of Contents
+---
 
-What This Project Does
+## 1. Features
 
-Screenshots
+* **ReAct Planning.** Structured reasoning → tool selection → observation → answer.
+* **Live Web Search.** Uses **Tavily** for up-to-date information retrieval.
+* **Observability.** Full visibility of tool inputs/outputs and the agent trace.
+* **Session Memory (optional).** Keep multi-turn conversational context.
+* **Composable Tools.** Add more tools (calculator, RAG, wiki, DB) with minimal code.
 
-How It Works
+---
 
-Tech Stack
+## 2. Screenshots
 
-Project Structure
+> Place the images under `./assets/` in your repo with the exact filenames below.
+> They will render automatically on GitHub.
 
-Getting Started
+<p align="center">
+  <img src="assets/1.png" alt="Agent execution graph" width="720"><br/>
+  <em>Figure&nbsp;1 — Agent execution graph.</em>
+</p>
 
-Run the Agent
+<p align="center">
+  <img src="assets/2.png" alt="Early-stage agent run answering a weather query" width="720"><br/>
+  <em>Figure&nbsp;2 — Early run: when used as a chatbot with an agent, the agent plans a weather check and answers in real time.</em>
+</p>
 
-Troubleshooting
+<p align="center">
+  <img src="assets/3.png" alt="Conversation memory demonstration" width="720"><br/>
+  <em>Figure&nbsp;3 — With memory enabled, the agent recalls the conversation and reasons over it.</em>
+</p>
 
-Roadmap
+<p align="center">
+  <img src="assets/4.png" alt="Behind-the-scenes agent behavior" width="1000"><br/>
+  <em>Figure&nbsp;4 — Final view from the debugger: how the agent orchestrates tool calls under the hood.</em>
+</p>
 
-License
+---
 
-What This Project Does
+## 3. Architecture & Method
 
-🧠 ReAct Agent (Reason + Act): Uses an LLM to plan actions and call tools.
+**Core loop (ReAct):**
 
-🌐 Live Web Search (Tavily): Pulls fresh information when the model decides it needs it.
+1. **Perception** — User input enters the ReAct prompt (from `langchain-hub`).
+2. **Reasoning** — The LLM plans whether a tool is necessary.
+3. **Action** — If needed, it calls **TavilySearch** with a concrete query.
+4. **Observation** — Tool returns structured results; the agent inspects them.
+5. **Final Answer** — The LLM composes a grounded response.
 
-🧾 Step-by-Step Transparency: Every tool call (input + observation) is visible in the logs/UI.
+**Implementation stack:**
 
-🗣️ Conversation Awareness: Can be run with session-based history to remember context across turns.
+* **LLM:** `ChatOpenAI` (default: `gpt-4o-mini`)
+* **Agent runtime:** LangChain `create_react_agent` + `AgentExecutor`
+* **Tooling:** `langchain-tavily` (`TavilySearch`)
+* **Prompt:** `hwchase17/react` (via `langchain-hub`)
+* **Env:** `python-dotenv`
+* **(Optional)** Session memory via `RunnableWithMessageHistory`, or persistent graph state with **LangGraph + SQLite**.
 
-🧩 Pluggable Tools: Add more tools (calculator, Wikipedia, databases) with minimal code.
+---
 
-Screenshots
+## 4. Repository Layout
 
-Place images under ./assets/ as 1.png, 2.png, 3.png, 4.png (filenames below). They’ll render automatically on GitHub.
-
-<p align="center"> <img src="./assets/1.png" alt="Agent workflow graph" width="720"> </p> <p align="center"><em>Figure 1 — Agent execution graph.</em></p> <p align="center"> <img src="./assets/2.png" alt="Early agent run with weather query" width="720"> </p> <p align="center"><em>Figure 2 — Early-stage run: the agent decides to perform a weather check and responds with up-to-date information.</em></p> <p align="center"> <img src="./assets/3.png" alt="Conversation memory demonstration" width="720"> </p> <p align="center"><em>Figure 3 — With memory enabled, the agent recalls prior turns and reasons over them.</em></p> <p align="center"> <img src="./assets/4.png" alt="Final agent behavior and behind-the-scenes view" width="1000"> </p> <p align="center"><em>Figure 4 — Final state: a behind-the-scenes view showing how the agent orchestrates tools under the hood.</em></p>
-How It Works
-
-Prompting (ReAct pattern):
-A ReAct prompt guides the model to think first, then act via tools, and finally answer. We use the public ReAct template from langchain-hub.
-
-Tooling (Tavily Web Search):
-The agent can call Tavily to search the web when its internal reasoning decides that external information is needed.
-
-Orchestration (AgentExecutor):
-LangChain’s AgentExecutor glues the LLM + tools + prompt together and returns both the final answer and intermediate steps (so you can audit what happened).
-
-Memory (optional, session-based):
-You can wrap the executor with a session history layer to retain multi-turn context. This keeps the agent “aware” of prior messages without hardcoding state handling.
-
-Note: There’s also a LangGraph path with SQLite checkpointing for persistent, resumable graphs. Choose the approach that fits your deployment style.
-
-Tech Stack
-
-LLM: ChatOpenAI (model: gpt-4o-mini, configurable)
-
-Agent: ReAct (create_react_agent from LangChain)
-
-Search Tool: langchain-tavily (TavilySearch)
-
-Prompt Source: langchain-hub (hwchase17/react)
-
-Env Management: python-dotenv
-
-Project Structure
+```
 .
 ├─ main.py
 ├─ requirements.txt
 ├─ .env.example
 └─ assets/
    ├─ 1.png   # Agent workflow graph
-   ├─ 2.png   # Early weather query run
-   ├─ 3.png   # Memory demonstration
-   └─ 4.png   # Final behind-the-scenes view
+   ├─ 2.png   # Early weather query output
+   ├─ 3.png   # Memory capability demonstration
+   └─ 4.png   # Final behind-the-scenes trace
+```
 
-Getting Started
-1) Clone & create a virtual environment
-git clone <your-repo-url>
-cd <your-repo-folder>
+---
 
+## 5. Installation
+
+> **Python 3.11+** is recommended. Use a clean virtual environment.
+
+### Windows
+
+```powershell
 python -m venv .venv
-# Windows
 .\.venv\Scripts\activate
-# macOS/Linux
-# source .venv/bin/activate
-
-2) Install dependencies
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+```
 
-3) Configure API keys
+### macOS/Linux
 
-Create a .env file in the repo root:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-OPENAI_API_KEY=sk-.................................
-TAVILY_API_KEY=tvly-...............................
+---
 
+## 6. Configuration
 
-(Alternatively set them as environment variables in your shell/session.)
+Create a file named **`.env`** in the repository root:
 
-Run the Agent
+```dotenv
+OPENAI_API_KEY=sk-*******************************
+TAVILY_API_KEY=tvly-*****************************
+```
+
+> Tip: never commit real keys. Keep `.env` out of version control or use GitHub Actions secrets.
+
+---
+
+## 7. Usage
+
+Run the agent from the project root:
+
+```bash
 python main.py
+```
 
+* A prompt `>` appears. Ask natural questions (e.g., “What is LangChain?”, “What is the current weather in Istanbul?”).
+* The agent decides whether to call **TavilySearch** and prints its step-by-step reasoning and results (when verbose / debug views are enabled).
+* Use your IDE’s “AI Agents Debugger” (or console logs) to inspect **intermediate steps** (tool name, input, observation).
 
-Type your question at the > prompt.
+---
 
-Watch the agent plan, search, and answer.
+## 8. Implementation Notes (aligned with `main.py`)
 
-If verbose logging is enabled, you’ll also see the reasoning path, tool inputs, and observations.
+* **Agent creation.**
 
-Troubleshooting
+  ```python
+  from langchain import hub
+  from langchain.agents import create_react_agent, AgentExecutor
+  from langchain_openai import ChatOpenAI
+  from langchain_tavily import TavilySearch
 
-The api_key client option must be set ...
-Ensure .env exists and load_dotenv() is called before creating the client. Keys must be tırnaksız (no quotes).
+  model = ChatOpenAI(model="gpt-4o-mini")
+  search = TavilySearch(max_results=2, include_answer=True, include_raw_content=True)
+  prompt = hub.pull("hwchase17/react")
+  tools = [search]                       # tool list (can contain multiple tools)
+  agent = create_react_agent(model, tools, prompt)
+  agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+  ```
 
-Deprecation warnings about memory (LangChain 0.3+):
-Prefer session-based history wrappers (RunnableWithMessageHistory) instead of legacy ConversationBufferMemory, or use LangGraph + SQLite checkpointing.
+  > Alternative (recommended for clarity): wrap the Tavily call in a `@tool` function and pass `[web_search]` as tools.
 
-“Tool list” mistakes (tuple has no name / agent can’t render tools):
-create_react_agent expects a list of tools (e.g., tools = [web_search]), not a single object.
+* **Session memory.**
+  For modern LangChain (0.3+), prefer **`RunnableWithMessageHistory`** to avoid legacy memory deprecations.
+  LangGraph users can opt for **SQLite checkpointing** to persist graph state; don’t mix `SqliteSaver` with `AgentExecutor`.
 
-Old Tavily imports (langchain_community.tools.tavily_search):
-Use the modern package: langchain-tavily (from langchain_tavily import TavilySearch).
+* **Observability.**
+  Use `return_intermediate_steps=True` in `AgentExecutor` to capture each tool call’s inputs and observations for auditability.
 
-Package version conflicts:
-Run pip install -r requirements.txt inside a clean venv. If a single package version fails to resolve on your machine, pin/adjust just that line and reinstall.
+---
 
-Roadmap
+## 9. Requirements
 
-Add more tools (Calculator, Wikipedia, custom RAG)
+This project uses the following key dependencies (see `requirements.txt` for the full list):
 
-Streamed token output for live typing UX
+```
+langchain==0.3.27
+langchain-openai==0.3.30
+langchain-tavily
+tavily-python==0.7.11
+langchain-core
+langchain-community==0.3.27
+langgraph==0.6.6
+langchainhub==0.1.21
+python-dotenv==1.1.1
+beautifulsoup4==4.12.*   # if you pin, ensure a valid version (4.12.x)
+pytest==8.4.1
+```
 
-Web UI (FastAPI + simple chat front-end)
+> If your environment resolver fails on a specific pin, upgrade/downgrade just that package line and reinstall (`pip install -r requirements.txt`).
 
-Dockerfile & CI/CD
+---
 
-Source citations inline in answers
+## 10. Reproducibility Checklist
 
-License
+* [x] Isolated virtual environment
+* [x] Pinned baseline versions (LangChain / OpenAI / Tavily)
+* [x] Deterministic prompt source (`langchain-hub`)
+* [x] Explicit environment variables via `.env`
+* [x] Optional session memory wrapper or LangGraph checkpointing
 
-MIT — feel free to use, modify, and ship.
+---
 
-Credits
+## 11. Limitations
 
-Built with ❤️ using LangChain, Tavily, and OpenAI.
-Screenshots captured from the agent’s debug views to illustrate real decision flows.
+* **Third-party search.** Accuracy and availability depend on the Tavily service and the queried sources.
+* **LLM variability.** Outputs can vary slightly with temperature, model version, and context length.
+* **Real-time data.** The agent fetches fresh web results but still cannot access your local files or private APIs unless explicitly tooled.
+
+---
+
+## 12. Roadmap
+
+* Additional tools (calculator, Wikipedia, RAG over private docs)
+* Web UI (FastAPI + minimal chat front-end)
+* Streaming token UX
+* Automatic source citation formatting
+* Dockerfile + CI/CD pipeline
+
+---
+
+## 13. License
+
+MIT License. See `LICENSE` for details.
+
+---
+
+## 14. Acknowledgements
+
+Built with **LangChain**, **Tavily**, and **OpenAI**.
+Figures are captured from the agent’s debugger to document real decision paths.
+
+---
+
+## 15. Citation
+
+If you use this repository in academic work, please cite:
+
+```bibtex
+@software{llm_agents_react_websearch_2025,
+  title        = {LLM Agents Project — ReAct Web-Search Agent (LangChain + Tavily + OpenAI)},
+  author       = {Saraç, Etem},
+  year         = {2025},
+  url          = {https://github.com/<your-org-or-user>/<your-repo>},
+  note         = {ReAct agent with Tavily tool and full intermediate-step observability}
+}
+```
+
+---
+
+### Notes for Maintainers
+
+* When upgrading LangChain ≥ 0.3, prefer **`RunnableWithMessageHistory`** over legacy memory classes to eliminate deprecation warnings.
+* If switching to **LangGraph**, move state to **`SqliteSaver`** and construct the agent via `langgraph.prebuilt.create_react_agent`; do **not** pass `SqliteSaver` into `AgentExecutor`.
